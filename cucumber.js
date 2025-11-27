@@ -10,8 +10,8 @@ module.exports = {
       'json:reports/cucumber-report.json'        // JSON report (optional)
     ],
     paths: ['tests/features/**/*.feature'],      // All .feature files
-    publishQuiet: true,                          // Disable public report upload
     parallel: 0,                                 // Sequential execution
+    timeout: 120000,                             // Set timeout to 120 seconds
     tags: '',                                    // Optional: filter by @tags
     worldParameters: {
       baseURL: 'https://www.sargentsequipmentwi.com/' // Example global parameter
