@@ -14,7 +14,18 @@ module.exports = {
     timeout: 120000,                             // Set timeout to 120 seconds
     tags: '',                                    // Optional: filter by @tags
     worldParameters: {
-      baseURL: 'https://www.sargentsequipmentwi.com/' // Example global parameter
+      baseURL: '' // Example global parameter
     }
+  }
+  ,
+  debug: {
+    require: [
+      'Setup/hooks.js',
+      'tests/steps/ui/login_steps.js'
+    ],
+    format: ['progress'],
+    paths: ['tests/features/UIFeature/login.feature'],
+    timeout: 120000,
+    parallel: 0
   }
 };

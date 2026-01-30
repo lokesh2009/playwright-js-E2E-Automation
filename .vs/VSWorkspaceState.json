@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\tests",
-    "\\tests\\Feature"
+    "\\tests\\features",
+    "\\tests\\features\\APIFeature"
   ],
-  "SelectedNode": "\\package.json",
+  "SelectedNode": "\\tests\\specs",
   "PreviewInSolutionExplorer": false
 }

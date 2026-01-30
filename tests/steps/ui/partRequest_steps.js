@@ -1,31 +1,6 @@
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('chai');
 
-// Background Step: Navigate to Part Request Page
-Given('I navigate to dealerspike parts request page {string}', async function (partsRequestUrl) {
-    console.log(`🔗 Navigating to dealerspike parts request page: ${partsRequestUrl}`);
-    
-    try {
-        await global.page.goto(partsRequestUrl, { 
-            waitUntil: 'domcontentloaded', 
-            timeout: 60000 
-        }).catch((navigationError) => {
-            console.log(`Navigation took longer than expected: ${navigationError.message}`);
-        });
-        
-        // Wait for page to fully load
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const pageTitle = await global.page.title();
-        console.log(`✓ Successfully navigated to parts request page`);
-        console.log(`✓ Page title: ${pageTitle}`);
-        
-        this.partsRequestUrl = partsRequestUrl;
-    } catch (error) {
-        console.error(`❌ Error navigating to parts request page: ${error.message}`);
-        throw error;
-    }
-});
 
 // SCENARIO 1: Verify Part Request Page Load and Form Elements
 When('I verify the part request page is loaded', async function () {

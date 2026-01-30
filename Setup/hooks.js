@@ -1,5 +1,17 @@
 const playwright = require('playwright');
 const { BeforeAll, Before, After, AfterAll, Status, setDefaultTimeout } = require('@cucumber/cucumber');
+// Load local env variables if present
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv is optional; continue if not installed
+}
+
+// Expose credentials to tests via global.credentials when available
+global.credentials = {
+  email: process.env.EMAIL || '',
+  password: process.env.PASSWORD || ''
+};
 
 // Set global timeout to 120 seconds
 setDefaultTimeout(120000);
@@ -40,9 +52,29 @@ After(async function (scenario) {
   if (scenario.result.status === Status.FAILED) {
     try {
       if (global.page && global.context && global.browser) {
-        await global.page.screenshot({ path: `reports/${scenario.pickle.name}.png`, fullPage: true });
-        const buffer = await global.page.screenshot();
-        this.attach(buffer, 'image/png');
+        const fs = require('fs');
+        const path = require('path');
+        try { if (!fs.existsSync('reports')) fs.mkdirSync('reports', { recursive: true }); } catch (e) {}
+        // try screenshot with longer timeout and one retry
+        let buffer = null;
+        try {
+          buffer = await global.page.screenshot({ fullPage: true, timeout: 30000 });
+        } catch (e) {
+          console.error('Screenshot first attempt failed:', e && e.message ? e.message : e);
+          try { await global.page.waitForTimeout(1000); buffer = await global.page.screenshot({ fullPage: true, timeout: 20000 }); } catch (er) { buffer = null; }
+        }
+        if (buffer) {
+          try {
+            // sanitize filename
+            const rawName = scenario.pickle && scenario.pickle.name ? scenario.pickle.name : `screenshot-${Date.now()}`;
+            const safeName = rawName.replace(/[^a-z0-9-_.() ]/gi, '_').slice(0, 200);
+            const outPath = path.join('reports', `${safeName}.png`);
+            fs.writeFileSync(outPath, buffer);
+          } catch (wf) {
+            console.error('Could not write screenshot file:', wf && wf.message ? wf.message : wf);
+          }
+          this.attach(buffer, 'image/png');
+        }
       }
     } catch (error) {
       console.error('Error taking screenshot:', error);

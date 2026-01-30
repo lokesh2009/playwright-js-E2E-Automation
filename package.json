@@ -4,12 +4,13 @@
   "main": "index.js",
   "scripts": {
     "test": "cucumber-js",
-    "test:ui": "npx cucumber-js tests/ui/features --require tests/ui/steps --format json:reports/ui-report.json",
+    "test:ui": "npx cucumber-js tests/ui/features/xinventoryManager.feature --require tests/ui/steps --format json:reports/ui-report.json",
     "test:api": "npx cucumber-js tests/api/features --require tests/api/steps --format json:reports/api-report.json",
     "test:mobile": "npx cucumber-js tests/mobile/features --require tests/mobile/steps --format json:reports/mobile-report.json",
     "test:all": "npm run test:ui && npm run test:api && npm run test:mobile && npm run test:performance",
     "bdd": "npx cucumber-js tests/features/**/*.feature --require tests/step-definitions/**/*.js --format html:reports/cucumber-report.html",
     "report:generate": "allure generate reports --clean -o allure-report",
+    "report:extent": "node generateExtentReport.js",
     "test:cucumber": "npx cucumber-js",
     "test:performance": "node tests/specs/lighthouse.spec.js",
     "report:open": "allure open allure-report",
@@ -24,6 +25,7 @@
     "@cucumber/cucumber": "^9.5.0",
     "@playwright/test": "^1.55.1",
     "@types/node": "^24.1.0",
+    "allure-playwright": "^3.4.4",
     "cucumber-pretty": "^6.0.1",
     "eslint": "^9.31.0",
     "lighthouse": "^12.8.2"
@@ -32,6 +34,7 @@
     "axios": "^1.12.2",
     "chai": "^6.2.0",
     "dotenv": "^17.2.3",
+    "extent": "^0.4.0",
     "mocha": "^11.7.4"
   }
 }

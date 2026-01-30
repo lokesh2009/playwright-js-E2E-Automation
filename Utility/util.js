@@ -1,3 +1,4 @@
+const { getEnvironmentData } = require("worker_threads");
 
 module.exports = {
     scrollToElement,
@@ -29,5 +30,6 @@ async function typeText(page, selector, text) {
 async function waitForNetworkIdle(page, timeout = 3000) {
     await page.waitForLoadState('networkidle', { timeout });
 }
+
 
 
