@@ -7,7 +7,8 @@ module.exports = {
     format: [
       'progress',                                // Console output
       'html:reports/cucumber-report.html',       // HTML report
-      'json:reports/cucumber-report.json'        // JSON report (optional)
+      'json:reports/cucumber-report.json',       // JSON report (optional)
+      'json:allure-results/cucumber-report.json' // Allure JSON results
     ],
     paths: ['tests/features/**/*.feature'],      // All .feature files
     parallel: 0,                                 // Sequential execution

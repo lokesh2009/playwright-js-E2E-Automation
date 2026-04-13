@@ -231,3 +231,92 @@ Then('the temporary item should no longer be present', async function () {
   const body = await global.page.locator('body').textContent();
   assert.ok(!body || !body.includes('temp-item-123'), 'Expected temporary item to be removed');
 });
+
+When('I navigate to the XInv Manager URL {string}', async function (url) {
+  if (!global.page) throw new Error('global.page not initialized');
+  try {
+    await global.page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+  } catch (err) {
+    console.warn('Navigate failed with', err.message, '- retrying with domcontentloaded');
+    await global.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  }
+});
+
+Then('I should see pagination controls', async function () {
+  // Look for pagination elements like buttons, links with next, previous, page numbers
+  const paginationSelectors = ['.pagination', '.pager', 'nav[aria-label="Pagination"]', 'button.next', 'a.next', 'button.previous', 'a.previous', '.page-numbers', '[data-testid="pagination"]'];
+  let found = false;
+  for (const s of paginationSelectors) {
+    try {
+      const count = await global.page.locator(s).count();
+      if (count > 0) {
+        found = true;
+        break;
+      }
+    } catch (e) {
+      // continue
+    }
+  }
+  assert.ok(found, 'Expected pagination controls but found none');
+});
+
+Then('I should be able to navigate through pages', async function () {
+  // Try to click next if available
+  const nextSelectors = ['button.next', 'a.next', '.pagination .next', 'a[aria-label="Next"]', 'button[data-testid="next"]'];
+  let nextClicked = false;
+  for (const s of nextSelectors) {
+    try {
+      const btn = global.page.locator(s).first();
+      if (await btn.count() && await btn.isVisible()) {
+        await btn.click();
+        await global.page.waitForLoadState('networkidle');
+        await global.page.waitForTimeout(1000);
+        nextClicked = true;
+        break;
+      }
+    } catch (e) {}
+  }
+  if (nextClicked) {
+    console.log('Successfully navigated to next page');
+  } else {
+    console.log('No next button found, possibly single page or no pagination needed');
+  }
+});
+
+Then('I navigate by clicking on {string}', async function (linkText) {
+  if (!global.page) throw new Error('global.page not initialized');
+  
+  // Normalize the text for better matching
+  const normalizedText = linkText.toLowerCase().trim();
+  
+  // Try multiple strategies to find and click the link
+  const strategies = [
+    // Try exact text match with various selectors
+    () => global.page.locator(`a:has-text("${linkText}")`).first(),
+    () => global.page.locator(`button:has-text("${linkText}")`).first(),
+    () => global.page.locator(`:text("${linkText}")`).first(),
+    // Try partial matches
+    () => global.page.locator(`a, button, [role="link"], [role="button"]`).filter({ hasText: new RegExp(normalizedText, 'i') }).first(),
+  ];
+  
+  let found = false;
+  for (const strategy of strategies) {
+    try {
+      const element = strategy();
+      if (await element.count() && await element.isVisible()) {
+        await element.click();
+        await global.page.waitForLoadState('networkidle');
+        await global.page.waitForTimeout(1000);
+        console.log(`Successfully clicked on "${linkText}"`);
+        found = true;
+        break;
+      }
+    } catch (e) {
+      // continue to next strategy
+    }
+  }
+  
+  if (!found) {
+    throw new Error(`Could not find clickable element with text "${linkText}"`);
+  }
+});

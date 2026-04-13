@@ -17,6 +17,24 @@ class InventoryPage {
     //this.yearFilter = page.locator('#ddlYear');
 
     this.priceLocator = page.locator('.price');    
+
+    this.hoveronPreowned=page.locator('a:has-text("PRE-OWNED")');
+    this.allpreownedinventory=page.locator('a:has-text("All Pre-Owned Inventory")');
+    this.closecontactus=page.locator('button:has-text("×")');
+
+    //Inventory page locaters
+    this.lenghtFilter=page.locator("//li[@class='filter-groups__item filter-groups__item--length']//div//div[@class='filter-group__header']");
+  }
+
+    async OpenPreOwnedTab() {
+    await this .hoveronPreowned.click();
+    await this.allpreownedinventory.click();
+    await this.closecontactus.click();
+    
+  }
+
+   async asyncClickonLenghtFilter(){
+     await this.lenghtFilter.click();
   }
 
   async searchInventory(text) {

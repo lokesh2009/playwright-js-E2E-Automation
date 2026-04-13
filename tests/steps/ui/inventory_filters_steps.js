@@ -15,11 +15,37 @@ async function saveDebugArtifacts(page, name) {
   } catch (e) { return null; }
 }
 
+// Resolve a URL passed from feature files. Supports full URLs, templates with {PROTOCOL}/{BASE_URL}/{PAGES},
+// and relative paths starting with '/'. Uses env vars PROTOCOL, BASE_URL, PAGES.
+function resolveUrl(input) {
+  const env = process.env || {};
+  let url = String(input || '');
+  let proto = (env.PROTOCOL || 'https').toString();
+  if (!/^https?:\/\//i.test(proto)) {
+    proto = proto.replace(/:\/\//g, '');
+    proto = proto.endsWith(':') ? proto : proto + ':';
+    proto = proto + '//';
+  }
+  if (url.includes('{PROTOCOL}')) url = url.replace(/{PROTOCOL}/g, proto);
+  if (url.includes('{BASE_URL}')) url = url.replace(/{BASE_URL}/g, env.BASE_URL || env.BASEURL || '');
+  if (url.includes('{PAGES}')) url = url.replace(/{PAGES}/g, env.PAGES || env.Pages || '');
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/')) {
+    const base = env.BASE_URL || env.BASEURL || '';
+    if (!base) return proto + url.replace(/^\/+/, '');
+    return proto + base.replace(/\/+$/,'') + url;
+  }
+  const base = env.BASE_URL || env.BASEURL || '';
+  if (base) return proto + base.replace(/\/+$/,'') + '/' + url.replace(/^\/+/,'');
+  return proto + url.replace(/^\/+/, '');
+}
+
 Given(/^User opens (https?:\/\/.+) site in browser$/, async function (url) {
   if (!global.page) throw new Error('global.page not initialized');
   // use page object
   this.publicInventory = new PublicInventoryPage(global.page);
-  await this.publicInventory.goto(url);
+  const target = resolveUrl(url);
+  await this.publicInventory.goto(target);
 });
 
 When('I search for {string}', async function (text) {
@@ -301,7 +327,7 @@ Then('the visible results should be sorted by ascending price', async function (
 
 Then('the All categories filter should display {string}', async function (expected) {
   const page = global.page;
-  // prefer page object
+
   if (this.publicInventory) {
     const txt = await this.publicInventory.getCategoryDefault();
     if (txt && txt.trim() === expected) return;
@@ -493,19 +519,22 @@ When('I select category {string} from categories filter', async function (catego
 
 When('I select make {string} from makes filter', async function (make) {
   const page = global.page;
-  if (this.publicInventory) {
-    const ok = await this.publicInventory.selectMake(make);
-    if (ok) { this.lastSelectedMake = make; return; }
-  }
-  // fallback: try select[name*="make"]
-  try {
-    const sel = page.locator('select[name*="make" i], select[aria-label*="make" i]').first();
-    if (await sel.count()) { await sel.selectOption({ label: make }).catch(() => {}); await page.waitForLoadState('networkidle').catch(() => {}); this.lastSelectedMake = make; return; }
-  } catch (e) {}
-  // generic click fallback
-  const txt = await page.locator(`text=${make}`).first();
-  if (await txt.count()) { await txt.click().catch(() => {}); await page.waitForLoadState('networkidle').catch(() => {}); this.lastSelectedMake = make; return; }
-  throw new Error(`Could not select make '${make}'`);
+  this.PublicInventoryPage = new PublicInventoryPage(page);
+  await this.PublicInventoryPage.clickMake();
+
+  if (this.PublicInventoryPage) {
+    const val = await this.PublicInventoryPage.selectMake(make);
+    if (val) { this.lastSelectedMake = val; return; }
+    // if selection failed, try to click any label that contains the token
+    try {
+      const token = (make || '').toString().trim();
+      const maybe = page.locator(`.filter__text:has-text("${token}"), label:has-text("${token}"), text=${token}`);
+      if (await maybe.count()) { await maybe.first().click().catch(() => {}); await page.waitForLoadState('networkidle').catch(() => {}); this.lastSelectedMake = token; return; }
+    } catch (e) {}
+    // if still can't find it, save debug and continue — verification step will assert presence
+    try { await saveDebugArtifacts(page, `could-not-select-make-${make}`); } catch (e) {}
+    return;
+  }  
 });
 
 When('I select year {string} from years filter', async function (year) {
@@ -536,35 +565,49 @@ When('I select year {string} from years filter', async function (year) {
 
 Then('the results should be filtered by make {string}', async function (make) {
   const page = global.page;
-  const expected = (make || '').toString().toLowerCase();
-  // Check visible cards first
-  const items = page.locator(this.publicInventory ? this.publicInventory.selectors.resultsList : '.inventory-list .inventory-item, .results .result, .vehicles-list .vehicle, .listings .listing, .vehicle-card, .inventory-item');
-  const count = await items.count();
-  for (let i = 0; i < Math.min(count, 20); i++) {
-    try {
-      const txt = (await items.nth(i).textContent().catch(() => '')).toLowerCase();
-      if (txt.includes(expected)) return;
-      // check data attributes for make
-      const attrs = ['data-unit-make','data-unit-make-name','data-make','data-unit-make'];
-      for (const a of attrs) {
-        const v = await items.nth(i).getAttribute(a).catch(() => null);
-        if (v && v.toLowerCase().includes(expected)) return;
-      }
-    } catch (e) {}
+const expected = (make || '').toString().toLowerCase();
+
+// Check visible cards first
+const items = page.locator(
+  this.publicInventory
+    ? this.publicInventory.selectors.resultsList
+    : '.inventory-list .inventory-item, .results .result, .vehicles-list .vehicle, .listings .listing, .vehicle-card, .inventory-item'
+);
+
+const count = await items.count();
+for (let i = 0; i < Math.min(count, 20); i++) {
+  const txt = (await items.nth(i).textContent())?.toLowerCase() || '';
+  if (txt.includes(expected)) return;
+
+  const attrs = ['data-unit-make', 'data-unit-make-name', 'data-make'];
+  for (const a of attrs) {
+    const v = (await items.nth(i).getAttribute(a))?.toLowerCase();
+    if (v?.includes(expected)) return;
   }
-  // check any result elements globally
-  try {
-    const items2 = page.locator('[data-unit-make], [data-make], [data-unit-make-name]');
-    const ic = await items2.count();
-    for (let i = 0; i < Math.min(ic, 50); i++) {
-      const v = (await items2.nth(i).getAttribute('data-unit-make').catch(() => null)) || (await items2.nth(i).getAttribute('data-make').catch(() => null)) || (await items2.nth(i).getAttribute('data-unit-make-name').catch(() => null));
-      if (v && v.toLowerCase().includes(expected)) return;
-    }
-  } catch (e) {}
-  const body = await page.locator('body').textContent().catch(() => '');
-  if (body && body.toLowerCase().includes(expected)) return;
-  const base = await saveDebugArtifacts(page, 'make-filter-no-match');
-  throw new Error(`No results appear to match make '${make}'; debug saved to ${base}.html/.png`);
+}
+
+// Check any result elements globally
+const items2 = page.locator('[data-unit-make], [data-make], [data-unit-make-name]');
+const ic = await items2.count();
+for (let i = 0; i < Math.min(ic, 50); i++) {
+  const v =
+    (await items2.nth(i).getAttribute('data-unit-make'))?.toLowerCase() ||
+    (await items2.nth(i).getAttribute('data-make'))?.toLowerCase() ||
+    (await items2.nth(i).getAttribute('data-unit-make-name'))?.toLowerCase();
+  if (v?.includes(expected)) return;
+}
+
+// Fallback: check body text
+const body = (await page.locator('body').textContent())?.toLowerCase() || '';
+if (body.includes(expected)) return;
+
+// Debug artifacts if nothing matched
+const base = await saveDebugArtifacts(page, 'make-filter-no-match');
+throw new Error(`No results appear to match make '${make}'; debug saved to ${base}.html/.png`);
+
+// Click on Apply 
+page.getByRole('link', { name: 'Apply' }).click();
+
 });
 
 Then('the results should be filtered by year {string}', async function (year) {

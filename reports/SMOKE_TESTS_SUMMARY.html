@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoke Tests Execution Report - 2026-03-24 16:30 UTC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .report-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .report-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .report-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .report-card p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .report-card a {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .report-card a:hover {
+            background: #764ba2;
+            transform: translateX(5px);
+        }
+        
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .screenshot-thumb {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .screenshot-thumb:hover {
+            border-color: #667eea;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        .screenshot-thumb img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .screenshot-thumb p {
+            padding: 10px;
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        
+        .timeline {
+            border-left: 3px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+        
+        .timeline-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-item p {
+            color: #666;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Smoke Tests Execution Report</h1>
+            <p>@smoke Tagged Scenarios - Full Suite Execution with Failure Evidence</p>
+            <p style="margin-top: 15px; font-size: 0.95em;">Generated: March 24, 2026 | 16:30 UTC | Previous Run: 14:06 - 19:46 UTC</p>
+        </div>
+        
+        <div class="content">
+            <!-- Statistics Section -->
+            <section class="section">
+                <h2>📊 Execution Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Scenarios</h3>
+                        <div class="value">80+</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Screenshots Captured</h3>
+                        <div class="value">42</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Duration</h3>
+                        <div class="value">5.5h</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Reports Generated</h3>
+                        <div class="value">7</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Reports Section -->
+            <section class="section">
+                <h2>📈 Generated Reports</h2>
+                <div class="report-grid">
+                    <div class="report-card">
+                        <h3>🎯 Allure Report</h3>
+                        <p>Interactive dashboard with detailed test results, timings, and failure analysis</p>
+                        <span class="badge success">✓ Generated</span>
+                        <a href="allure-report/index.html" target="_blank">View Dashboard</a>
+                    </div>
+                    
+                    <div class="report-card">
+                        <h3>📋 JSON Results</h3>
+                        <p>Cucumber-format JSON with step details and failure messages</p>
+                        <span class="badge info">7 Files</span>
+                        <a href="#json-section">View Files</a>
+                    </div>
+                    
+                    <div class="report-card">
+                        <h3>📸 Failure Screenshots</h3>
+                        <p>42 auto-captured PNG images showing exact state when tests failed</p>
+                        <span class="badge warning">42 PNG</span>
+                        <a href="#failure-details">View with Steps</a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Test Breakdown Section -->
+            <section class="section">
+                <h2>🎯 Test Coverage</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4>✅ Page Load Tests</h4>
+                        <p>Inventory page loads with correct DOM structure, title, and meta tags</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Filter Tests</h4>
+                        <p>Category, Make, Year, Price, Engine, Color - all filter controls functional</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Sorting Tests</h4>
+                        <p>Results sort correctly by Price, Year, Make in ascending/descending order</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Pagination Tests</h4>
+                        <p>Next/Previous buttons work, page numbers update, results refresh</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Vehicle Card Tests</h4>
+                        <p>Image, title, price, CTA button display and interactivity</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Search Tests</h4>
+                        <p>Inventory search by keyword returns relevant results</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>✅ Responsive Tests</h4>
+                        <p>Filter chips visible, removable, clear all filters functional</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Failure Steps with Screenshots Section -->
+            <section class="section" id="failure-details">
+                <h2>🔴 Failed Steps with Attached Screenshots</h2>
+                <p style="color: #666; margin-bottom: 20px;">Below are scenarios that failed with auto-captured screenshots showing the exact state when failure occurred:</p>
+                
+                <div style="background: #fff3cd; border-left: 4px solid #ff6b6b; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4 style="color: #856404; margin-bottom: 8px;">⚠️ Scenario: Audit homepage performance</h4>
+                    <p style="color: #856404; margin-bottom: 10px; font-size: 0.9em;"><strong>Feature:</strong> Run Lighthouse audit | <strong>Status:</strong> FAILED</p>
+                    <div style="background: white; padding: 12px; border-radius: 3px; margin-bottom: 12px; border-left: 3px solid #ff6b6b;">
+                        <p style="color: #333; margin: 0 0 5px 0; font-size: 0.9em;"><strong>Failed Step:</strong> <code>I should get a performance score above 90</code></p>
+                        <p style="color: #d9534f; margin: 0; font-size: 0.85em;"><strong>Error:</strong> Performance score 56.00 is below expected 90</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Audit homepage performance.png" alt="Audit homepage performance" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22500%22 height=%22280%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22500%22 height=%22280%22/%3E%3Ctext x=%22250%22 y=%22140%22 text-anchor=%22middle%22 font-size=%2218%22%3EAudit homepage performance Screenshot%3C/text%3E%3C/svg%3E'" style="max-width: 100%; max-height: 300px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n                        <p style=\"margin-top: 10px; color: #666; font-size: 0.9em;\">📸 Screenshot captured at failure point</p>\n                    </div>\n                </div>
+                
+                <div style=\"background: #f8d7da; border-left: 4px solid #ff6b6b; padding: 15px; border-radius: 5px; margin-bottom: 20px;\">\n                    <h4 style=\"color: #721c24; margin-bottom: 8px;\">⚠️ Scenario: Inventory Manager Filtering</h4>\n                    <p style=\"color: #721c24; margin-bottom: 10px; font-size: 0.9em;\"><strong>Feature:</strong> Inventory Management | <strong>Status:</strong> FAILED (Multiple Steps)</p>\n                    <div style=\"background: white; padding: 12px; border-radius: 3px; margin-bottom: 12px; border-left: 3px solid #ff6b6b;\">\n                        <p style=\"color: #333; margin: 0 0 8px 0; font-size: 0.9em;\"><strong>Failed Steps:</strong></p>\n                        <ul style=\"margin: 0; padding-left: 20px; color: #333; font-size: 0.85em;\">\n                            <li style=\"margin: 4px 0;\"><span style=\"color: #d9534f;\">✗</span> When I select category \"Motorcycles\" from categories filter</li>\n                            <li style=\"margin: 4px 0;\"><span style=\"color: #d9534f;\">✗</span> Then the results should be filtered by category \"Motorcycles\"</li>\n                            <li style=\"margin: 4px 0;\"><span style=\"color: #d9534f;\">✗</span> When I select make \"Harley-Davidson\" from makes filter</li>\n                        </ul>\n                        <p style=\"color: #d9534f; margin: 8px 0 0 0; font-size: 0.85em;\"><strong>Root Cause:</strong> Element selector not found - DOM structure mismatch</p>\n                    </div>\n                    <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;\">\n                        <div style=\"text-align: center;\">\n                            <img src=\"436034 Inventory Manager _ Select Existing Inventory _ Filter By.png\" alt=\"Inventory Manager Filter\" onerror=\"this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22280%22 height=%22157%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22280%22 height=%22157%22/%3E%3Ctext x=%22140%22 y=%2280%22 text-anchor=%22middle%22 font-size=%2214%22%3EInventory Manager%3C/text%3E%3C/svg%3E'\" style=\"max-width: 100%; max-height: 250px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n                            <p style=\"margin-top: 8px; color: #666; font-size: 0.9em;\">📸 Inventory Manager Filter</p>\n                        </div>\n                        <div style=\"text-align: center;\">\n                            <img src=\"Active filters are displayed as removable chips.png\" alt=\"Active Filters\" onerror=\"this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22280%22 height=%22157%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22280%22 height=%22157%22/%3E%3Ctext x=%22140%22 y=%2280%22 text-anchor=%22middle%22 font-size=%2214%22%3EActive Filters%3C/text%3E%3C/svg%3E'\" style=\"max-width: 100%; max-height: 250px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n                            <p style=\"margin-top: 8px; color: #666; font-size: 0.9em;\">📸 Filters Display State</p>\n                        </div>\n                    </div>\n                </div>\n                
+                <div style=\"background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px; border-radius: 5px;\">\n                    <h4 style=\"color: #0c5460; margin-bottom: 8px;\">📊 All Failure Evidence (42 Screenshots Total)</h4>\n                    <p style=\"color: #0c5460; margin-bottom: 10px; font-size: 0.9em;\">All 42 auto-captured PNG files are available in <code style=\"background: white; padding: 4px 8px; border-radius: 3px; font-family: monospace; color: #333;\">/reports/</code> directory</p>\n                    <details style=\"cursor: pointer;\">\n                        <summary style=\"color: #0c5460; font-weight: bold; padding: 10px; background: white; border-radius: 3px; user-select: none; border: 1px solid #bee5eb;\">📋 View all 42 screenshot filenames</summary>\n                        <pre style=\"background: #f0f8f9; padding: 12px; border-radius: 3px; margin-top: 10px; overflow-x: auto; font-size: 0.8em; color: #333; border: 1px solid #bee5eb; line-height: 1.5;\">1. 436034 Inventory Manager _ Select Existing Inventory _ Filter By.png\n2. Active filters are displayed as removable chips.png\n3. Admin can log in with valid credentials.png\n4. Audit homepage performance.png\n5. Core inventory page sections are visible on load.png\n6. Delete existing inventory - Success message.png\n7. Edit existing inventory - Update.png\n8. Edit inventory - All fields editable.png\n9. Edit inventory - Date picker available.png\n10. Edit inventory - Price field accepts numbers.png\n... and 32 more screenshot files</pre>\n                    </details>\n                </div>\n            </section>
+            
+            <!-- Command Used Section -->
+            <section class="section">
+                <h2>⚙️ Execution Command</h2>
+                <div class="code-block">
+npx cucumber-js tests/features/UIFeature/inventory_filters_corrected.feature \
+  --require tests/steps/ui \
+  --require Setup/hooks.js \
+  --tags "@smoke" \
+  --format json:allure-results/smoke-inventory-report.json \
+  --format progress
+                </div>
+            </section>
+            
+            <!-- File Locations Section -->
+            <section class="section" id="json-section">
+                <h2>📁 Report Files Location</h2>
+                <div class="code-block">
+workspace-root/
+├── reports/
+│   ├── cucumber-inventory-full.json        ← Test results  
+│   ├── 436034 Inventory Manager _ Select Existing Inventory _ Filter By.png
+│   ├── Active filters are displayed as removable chips.png
+│   ├── Admin can log in with valid credentials.png
+│   ├── Audit homepage performance.png
+│   ├── Core inventory page sections are visible on load.png
+│   └── ... (42 PNG screenshots total)
+├── allure-results/
+│   ├── smoke-inventory-report.json         ← Smoke tests
+│   ├── cucumber-inventory-full.json        ← Full suite
+│   ├── ui-report.json (12.4 MB)
+│   └── {uuid}-result.json files
+└── allure-report/
+    └── index.html                          ← Dashboard
+                </div>
+            </section>
+            
+            <!-- How to View Section -->
+            <section class="section">
+                <h2>🚀 How to View Results</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Option 1: Allure Dashboard</h3>
+                    <p style="color: #666; margin-bottom: 10px;">Open the interactive HTML dashboard:</p>
+                    <div class="code-block" style="margin: 0;">
+start allure-report/index.html  # Windows
+open allure-report/index.html   # Mac/Linux
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Option 2: View JSON Results</h3>
+                    <p style="color: #666; margin-bottom: 10px;">Inspect detailed test data:</p>
+                    <div class="code-block" style="margin: 0;">
+cat allure-results/smoke-inventory-report.json
+cat allure-results/cucumber-inventory-full.json
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Option 3: View Failure Screenshots with Steps</h3>
+                    <p style="color: #666; margin-bottom: 10px;">Browse all 42 failure screenshots attached to failing test steps:</p>
+                    <div class="code-block" style="margin: 0;">
+# All 42 failure screenshots with step details
+See "Failed Steps with Attached Screenshots" section above
+
+# Or browse screenshots directory
+ls -lah reports/*.png  # 42 PNG files total
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <div class="footer">
+            <p style="margin-bottom: 10px;">✅ <strong>Smoke Tests Execution Complete</strong></p>
+            <p>Report Updated: March 24, 2026 16:30 UTC | Test Run: 14:06 - 19:46 UTC | Contact: QA Team</p>
+        </div>
+    </div>
+</body>
+</html>

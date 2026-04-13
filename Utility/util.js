@@ -26,6 +26,19 @@ async function typeText(page, selector, text) {
     await element.type(text);
 }
 
+async function clickByClassSuffix(locator, prefix, value) {
+  const count = await locator.count();
+
+  for (let i = 0; i < count; i++) {
+    const cls = await locator.nth(i).getAttribute('class');
+    if (cls.includes(`${prefix}${value}`)) {
+      await locator.nth(i).click();
+      return;
+    }
+  }
+  throw new Error(`${value} not found`);
+}
+
 
 async function waitForNetworkIdle(page, timeout = 3000) {
     await page.waitForLoadState('networkidle', { timeout });

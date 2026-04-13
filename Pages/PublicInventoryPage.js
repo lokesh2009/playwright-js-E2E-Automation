@@ -1,7 +1,8 @@
 class PublicInventoryPage {
     constructor(page) {
         this.page = page;
-        // Centralized selectors used by inventory feature steps
+        // Centralized selectors used by inventory feature steps page.locator(':text-is("MAKE")')
+        this.makeSelect = page.locator("li.filter-groups__item--make >> div.filter-group__header");
         this.selectors = {
             // search
             searchInputs: ['input[type="search"]', 'input[placeholder*="Search" i]', 'input[name*="search" i]', 'input[id*="search" i]'],
@@ -18,9 +19,13 @@ class PublicInventoryPage {
 
             // filters
             categorySelect: 'select[name*="category" i], select[aria-label*="category" i]',
-            makeSelect: 'select[name*="make" i], select[aria-label*="make" i]',
+        
             yearSelect: 'select[name*="year" i], select[aria-label*="year" i]'
         };
+    }
+
+    async clickMake() {
+        await this.makeSelect.click();
     }
 
     async goto(url) {
@@ -297,8 +302,9 @@ class PublicInventoryPage {
     }
 
     async selectMake(label) {
-        // 1) Try classic <select> controls first
+       
         const sel = this.page.locator(this.selectors.makeSelect).first();
+        sel.click();
         if (await sel.count()) {
             await sel.selectOption({ label }).catch(() => {});
             await this.page.waitForLoadState('networkidle').catch(() => {});

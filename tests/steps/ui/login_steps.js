@@ -16,11 +16,11 @@ When('I log in with valid admin credentials', async function () {
   
 });
 
-Then('I should be logged in to the admin ', async function () {
+Then('I should be logged in to the admin console', async function () {
   if (!global.page) throw new Error('global.page is not initialized. Check hooks.');
   const login = new LoginPageCucumber(global.page);
   const ok = await login.isLoggedIn(10000);
-  if (!ok) {console
+  if (!ok) {
     try { await global.page.screenshot({ path: 'reports/login-failure.png', fullPage: true }); } catch (e) {}
     throw new Error('Login did not reach expected post-login state');
   }

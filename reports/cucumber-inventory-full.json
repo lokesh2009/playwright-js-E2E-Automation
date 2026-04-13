@@ -1,203 +1,126 @@
 [
   {
-    "description": "  As a user I want to verify inventory search, sort and filter controls on the public inventory page so that customers can find vehicles",
+    "description": "  As a user\n  I want the length filter to correctly reflect inventory\n  So that I can see accurate results for both Marine and RV units",
     "elements": [
       {
         "description": "",
-        "id": "public-inventory-filters-and-search;search-returns-results-and-sort-by-changes-order",
+        "id": "length-filter-accuracy-for-marine-and-rv-inventory-on-srp;length-filter-correctly-applies-to-both-marine-and-rv-inventory",
         "keyword": "Scenario",
-        "line": 6,
-        "name": "Search returns results and Sort By changes order",
+        "line": 12,
+        "name": "Length filter correctly applies to both Marine and RV inventory",
         "steps": [
           {
             "keyword": "Before",
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 187852499
+              "duration": 160300
+            }
+          },
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 184667999
             }
           },
           {
             "arguments": [],
             "keyword": "Given ",
-            "line": 7,
-            "name": "User opens \"https://automationsandbox-v6.clients.dealerspike.net/for-sale--xAllInventory\" site in browser",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_feature_steps.js:158"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 8611548100
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
             "line": 8,
-            "name": "I search the inventory for \"BMW\"",
+            "name": "the dealer site is configured with \"dstMarine\" and \"dstRV\"",
             "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:50"
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:8"
             },
             "result": {
               "status": "passed",
-              "duration": 22200600100
+              "duration": 385700
             }
           },
           {
             "arguments": [],
-            "keyword": "Then ",
+            "keyword": "And ",
             "line": 9,
-            "name": "I should see at least one inventory result",
+            "name": "the user is on the SRP page",
             "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:75"
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:15"
             },
             "result": {
               "status": "passed",
-              "duration": 9179700
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
-            "line": 10,
-            "name": "I sort results by \"Price\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:93"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 149134099
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 11,
-            "name": "the visible results should be sorted by ascending price",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:169"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 6316999
-            }
-          },
-          {
-            "keyword": "After",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 17007699
-            }
-          }
-        ],
-        "tags": [
-          {
-            "name": "@P1",
-            "line": 5
-          },
-          {
-            "name": "@Inventory",
-            "line": 5
-          },
-          {
-            "name": "@V61",
-            "line": 5
-          }
-        ],
-        "type": "scenario"
-      },
-      {
-        "description": "",
-        "id": "public-inventory-filters-and-search;filter-dropdowns-show-defaults-and-can-be-changed",
-        "keyword": "Scenario",
-        "line": 14,
-        "name": "Filter dropdowns show defaults and can be changed",
-        "steps": [
-          {
-            "keyword": "Before",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 109312400
+              "duration": 43296941300
             }
           },
           {
             "arguments": [],
             "keyword": "Given ",
-            "line": 15,
-            "name": "User opens \"https://automationsandbox-v6.clients.dealerspike.net/for-sale--xAllInventory\" site in browser",
+            "line": 13,
+            "name": "Marine units have valid \"LOA length\" values",
             "match": {
-              "location": "tests\\steps\\ui\\inventory_feature_steps.js:158"
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:29"
             },
             "result": {
               "status": "passed",
-              "duration": 10921880400
+              "duration": 553400
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 14,
+            "name": "RV units have valid \"length\" values",
+            "match": {
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:34"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 423999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 15,
+            "name": "the user applies a length filter range \"20 to 30\"",
+            "match": {
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:39"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 356799
             }
           },
           {
             "arguments": [],
             "keyword": "Then ",
             "line": 16,
-            "name": "the All categories filter should display \"All Categories\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:302"
-            },
+            "name": "Marine units with \"LOA length\" between \"20 and 30\" should be displayed",
             "result": {
-              "status": "passed",
-              "duration": 15328999
+              "status": "undefined",
+              "duration": 0
             }
           },
           {
             "arguments": [],
-            "keyword": "Then ",
+            "keyword": "And ",
             "line": 17,
-            "name": "the All makes filter should display \"All Makes\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:343"
-            },
+            "name": "RV units with \"length\" between \"20 and 30\" should be displayed",
             "result": {
-              "status": "passed",
-              "duration": 12775600
+              "status": "undefined",
+              "duration": 0
             }
           },
           {
             "arguments": [],
-            "keyword": "Then ",
+            "keyword": "And ",
             "line": 18,
-            "name": "the All years filter should display \"All Years\"",
+            "name": "no units outside the selected range should be shown",
             "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:376"
+              "location": "tests\\steps\\ui\\length_filter_accuracy_steps.js:63"
             },
             "result": {
-              "status": "passed",
-              "duration": 8715400
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
-            "line": 19,
-            "name": "I select category \"Adventure\" from categories filter",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:393"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 22185471199
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 20,
-            "name": "the results should be filtered by category \"Adventure\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:592"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 18105999
+              "status": "skipped",
+              "duration": 0
             }
           },
           {
@@ -205,255 +128,32 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 40115999
+              "duration": 37003600
             }
           }
         ],
         "tags": [
           {
-            "name": "@P1",
-            "line": 13
+            "name": "@positive",
+            "line": 11
           },
           {
-            "name": "@Inventory",
-            "line": 13
+            "name": "@smoke",
+            "line": 11
           },
           {
-            "name": "@V6",
-            "line": 13
-          }
-        ],
-        "type": "scenario"
-      },
-      {
-        "description": "",
-        "id": "public-inventory-filters-and-search;search-returns-results-and-sort-by-changes-order",
-        "keyword": "Scenario",
-        "line": 24,
-        "name": "Search returns results and Sort By changes order",
-        "steps": [
-          {
-            "keyword": "Before",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 140576000
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Given ",
-            "line": 25,
-            "name": "User opens \"https://ridenow.qa.dsp.leadventure.dev/default.asp?page=xAllInventory&pg=1\" site in browser",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_feature_steps.js:158"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 75165965899
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
-            "line": 26,
-            "name": "I search the inventory for \"Honda\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:50"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 11542511100
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 27,
-            "name": "I should see at least one inventory result",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:75"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 44708800
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
-            "line": 28,
-            "name": "I sort results by \"Price\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:93"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 30132280599
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 29,
-            "name": "the visible results should be sorted by ascending price",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:169"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 63764999
-            }
-          },
-          {
-            "keyword": "After",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 33345100
-            }
-          }
-        ],
-        "tags": [
-          {
-            "name": "@P1",
-            "line": 23
-          },
-          {
-            "name": "@Inventory",
-            "line": 23
-          },
-          {
-            "name": "@V7",
-            "line": 23
-          }
-        ],
-        "type": "scenario"
-      },
-      {
-        "description": "",
-        "id": "public-inventory-filters-and-search;filter-dropdowns-show-defaults-and-can-be-changed",
-        "keyword": "Scenario",
-        "line": 32,
-        "name": "Filter dropdowns show defaults and can be changed",
-        "steps": [
-          {
-            "keyword": "Before",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 119293399
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Given ",
-            "line": 33,
-            "name": "User opens \"https://automationsandbox-v7.clients.dealerspike.net/default.asp?page=xAllInventory&pg=1\" site in browser",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_feature_steps.js:158"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 13431098199
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 34,
-            "name": "the All categories filter should display \"Vehicle Type\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:302"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 6349500
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 35,
-            "name": "the All makes filter should display \"Make\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:343"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 5204900
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 36,
-            "name": "the All years filter should display \"Year\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:376"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 13219799
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "When ",
-            "line": 37,
-            "name": "I select category \"Off-Road\" from categories filter",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:393"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 30134193299
-            }
-          },
-          {
-            "arguments": [],
-            "keyword": "Then ",
-            "line": 38,
-            "name": "the results should be filtered by category \"Off-Road\"",
-            "match": {
-              "location": "tests\\steps\\ui\\inventory_filters_steps.js:592"
-            },
-            "result": {
-              "status": "passed",
-              "duration": 9124800
-            }
-          },
-          {
-            "keyword": "After",
-            "hidden": true,
-            "result": {
-              "status": "passed",
-              "duration": 23051899
-            }
-          }
-        ],
-        "tags": [
-          {
-            "name": "@P1",
-            "line": 31
-          },
-          {
-            "name": "@Inventory",
-            "line": 31
-          },
-          {
-            "name": "@V7",
-            "line": 31
+            "name": "@Len",
+            "line": 11
           }
         ],
         "type": "scenario"
       }
     ],
-    "id": "public-inventory-filters-and-search",
+    "id": "length-filter-accuracy-for-marine-and-rv-inventory-on-srp",
     "line": 1,
     "keyword": "Feature",
-    "name": "Public Inventory filters and search",
+    "name": "Length filter accuracy for Marine and RV inventory on SRP",
     "tags": [],
-    "uri": "tests\\features\\UIFeature\\inventory_filters.feature"
+    "uri": "tests\\features\\UIFeature\\length_filter_accuracy.feature"
   }
 ]

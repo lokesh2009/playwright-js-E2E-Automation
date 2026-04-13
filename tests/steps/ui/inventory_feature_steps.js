@@ -154,10 +154,54 @@ async function performAdminLogin(page) {
   return false;
 }
 
+// Resolve a URL passed from feature files. Supports:
+// - full URLs (returned as-is)
+// - templates containing {PROTOCOL}, {BASE_URL}, {PAGES}
+// - relative paths (starting with '/') which will be prepended with PROTOCOL + BASE_URL
+function resolveUrl(input) {
+  const env = process.env || {};
+  let url = String(input || '');
+
+  // Normalize protocol value from env (allow 'https' or 'https://')
+  let proto = (env.PROTOCOL || env.PROTOCOL || 'https').toString();
+  if (!/^https?:\/\//i.test(proto)) {
+    proto = proto.replace(/:\/\//g, '');
+    proto = proto.endsWith(':') ? proto : proto + ':';
+    proto = proto + '//';
+  }
+
+  // Replace simple tokens if present
+  if (url.includes('{PROTOCOL}')) url = url.replace(/{PROTOCOL}/g, proto);
+  if (url.includes('{BASE_URL}')) url = url.replace(/{BASE_URL}/g, env.BASE_URL || env.BASEURL || '');
+  if (url.includes('{PAGES}')) url = url.replace(/{PAGES}/g, env.PAGES || env.Pages || '');
+
+  // If it's already an absolute URL, return it
+  if (/^https?:\/\//i.test(url)) return url;
+
+  // If input is a simple hostname (no protocol) but contains a dot, prepend protocol
+  if (/^[^\/]+\.[^\/]+/.test(url) && !/^https?:\/\//i.test(url)) {
+    return proto + url.replace(/^\/+/, '');
+  }
+
+  // If it's a path (starts with /), build from PROTOCOL + BASE_URL
+  if (url.startsWith('/')) {
+    const base = env.BASE_URL || env.BASEURL || '';
+    if (!base) return proto + url.replace(/^\/+/, '');
+    // ensure single slash between base and path
+    return proto + base.replace(/\/+$/,'') + url;
+  }
+
+  // If nothing matched, as a last resort try to combine PROTOCOL + BASE_URL + '/' + url
+  const base = env.BASE_URL || env.BASEURL || '';
+  if (base) return proto + base.replace(/\/+$/,'') + '/' + url.replace(/^\/+/,'');
+  return proto + url.replace(/^\/+/, '');
+}
+
 
 Given('User opens {string} site in browser', async function (url) {
   if (!global.page) throw new Error('global.page not initialized');
-  await global.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const target = resolveUrl(url);
+  await global.page.goto(target, { waitUntil: 'domcontentloaded', timeout: 120000 });
   // allow client JS to render menus
   await global.page.waitForTimeout(800);
   // If a login form is present, attempt to login using provided credentials
@@ -167,7 +211,9 @@ Given('User opens {string} site in browser', async function (url) {
 // Support unquoted URL in feature (e.g. Given User opens https://... site in browser)
 Given(/^User opens (https?:\/\/.+) site in browser$/, async function (url) {
   if (!global.page) throw new Error('global.page not initialized');
-  await global.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  // This variant historically matched full URLs; we still resolve in case templates or env-based
+  const target = resolveUrl(url);
+  await global.page.goto(target, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await global.page.waitForTimeout(800);
 });
 

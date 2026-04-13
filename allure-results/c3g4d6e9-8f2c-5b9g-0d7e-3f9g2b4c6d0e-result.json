@@ -1,0 +1,45 @@
+{
+  "name": "Inventory filters work correctly",
+  "status": "failed",
+  "stage": "finished",
+  "description": "Validate inventory filtering by make and category",
+  "steps": [
+    {
+      "name": "User opens inventory page",
+      "status": "passed",
+      "stage": "finished"
+    },
+    {
+      "name": "I select category Honda from categories filter",
+      "status": "passed",
+      "stage": "finished"
+    },
+    {
+      "name": "I select make Motorcycles from makes filter",
+      "status": "failed",
+      "stage": "finished",
+      "statusDetails": {
+        "message": "Could not select make 'Motorcycles' - element not found"
+      }
+    }
+  ],
+  "start": 1711270850000,
+  "stop": 1711270865000,
+  "uuid": "c3g4d6e9-8f2c-5b9g-0d7e-3f9g2b4c6d0e",
+  "historyId": "3",
+  "fullName": "Inventory Filters - Inventory filters work correctly",
+  "labels": [
+    {
+      "name": "feature",
+      "value": "Inventory Filters"
+    },
+    {
+      "name": "story",
+      "value": "Inventory filters work correctly"
+    },
+    {
+      "name": "severity",
+      "value": "normal"
+    }
+  ]
+}

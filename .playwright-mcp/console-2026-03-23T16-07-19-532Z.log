@@ -1,0 +1,14 @@
+[    1650ms] Unexpected token ';'
+[   15917ms] Unexpected token ';'
+[   20812ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://automationsandbox-v6.clients.dealerspike.net/js/multislider.min.js:0
+[   20816ms] TypeError: $(...).multislider is not a function
+    at https://automationsandbox-v6.clients.dealerspike.net/:816:30
+[   31137ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://automationsandbox-v6.clients.dealerspike.net/js/multislider.min.js:0
+[   31140ms] TypeError: $(...).multislider is not a function
+    at https://automationsandbox-v6.clients.dealerspike.net/:1179:26
+[   31148ms] TypeError: $(...).YTPlayer is not a function
+    at HTMLDocument.<anonymous> (https://automationsandbox-v6.clients.dealerspike.net/:1203:16)
+    at c (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:26036)
+    at Object.fireWith [as resolveWith] (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:26840)
+    at x.ready (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:3305)
+    at HTMLDocument.q (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:717)

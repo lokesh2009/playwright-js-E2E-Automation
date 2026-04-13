@@ -1,0 +1,15 @@
+[   14305ms] Unexpected token ';'
+[   20497ms] Unexpected token ';'
+[   20807ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://automationsandbox-v6.clients.dealerspike.net/js/multislider.min.js:0
+[   20818ms] TypeError: $(...).multislider is not a function
+    at https://automationsandbox-v6.clients.dealerspike.net/:816:30
+[   21163ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://automationsandbox-v6.clients.dealerspike.net/js/multislider.min.js:0
+[   21165ms] TypeError: $(...).multislider is not a function
+    at https://automationsandbox-v6.clients.dealerspike.net/:1179:26
+[   21170ms] TypeError: $(...).YTPlayer is not a function
+    at HTMLDocument.<anonymous> (https://automationsandbox-v6.clients.dealerspike.net/:1203:16)
+    at c (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:26036)
+    at Object.fireWith [as resolveWith] (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:26840)
+    at x.ready (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:3305)
+    at HTMLDocument.q (https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js:4:717)
+[   34977ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ https://talk.chatbridge.io/chatbeacon/Leadventure/1066/scripts/chatbeacon.js?accountId=4&siteId=1066&queueId=1069&m=1&i=1&b=1&c=1&theme=frame&multiq=1203,1204:0
