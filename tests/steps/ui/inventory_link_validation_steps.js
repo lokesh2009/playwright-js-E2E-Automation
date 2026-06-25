@@ -1,6 +1,41 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
+const { Given, When, Then, Before, After } = require('@cucumber/cucumber');
 const { chromium, request } = require('@playwright/test');
 const InventoryLinkValidationPage = require('../../../Pages/InventoryLinkValidationPage');
+
+// ── Lifecycle ────────────────────────────────────────────────────────────────
+
+Before({ tags: '@Healthcheck' }, async function () {
+  this.apiCtx = await request.newContext({ ignoreHTTPSErrors: true });
+});
+
+After({ tags: '@Healthcheck' }, async function () {
+  if (this.apiCtx) await this.apiCtx.dispose();
+  if (this.page)    await this.page.close().catch(() => {});
+  if (this.context) await this.context.close().catch(() => {});
+  if (this.browser) await this.browser.close().catch(() => {});
+});
+
+// ── Background ───────────────────────────────────────────────────────────────
+
+Given('the QA site is reachable at {string}', async function (siteUrl) {
+  // InventoryLinkValidationPage needs a page instance for goto(), but the
+  // health check only uses the API context, so we pass null for page/context.
+  const checker = new InventoryLinkValidationPage(null, null);
+  const { reachable, status } = await checker.healthCheck(siteUrl, this.apiCtx);
+
+  this.attach(
+    `Health Check — ${siteUrl}\nStatus: ${status} | Reachable: ${reachable}`,
+    'text/plain'
+  );
+
+  if (!reachable) {
+    throw new Error(
+      `🚨 Health check FAILED for ${siteUrl} — HTTP ${status}. Skipping link validation.`
+    );
+  }
+});
+
+// ── Scenario steps ────────────────────────────────────────────────────────────
 
 Given('I navigate to the inventory page for {string}', async function (siteUrl) {
   this.browser = await chromium.launch({ headless: true });
@@ -20,15 +55,8 @@ When('I extract all unique links from the page', async function () {
 });
 
 Then('I validate each link and report failures with screenshots', async function () {
-  const apiCtx = await request.newContext({ ignoreHTTPSErrors: true });
-
   const { results, passCount, failCount } =
-    await this.inventoryLinkPage.validateAllLinks(apiCtx, this.uniqueLinks);
-
-  await apiCtx.dispose();
-  await this.page.close();
-  await this.context.close();
-  await this.browser.close();
+    await this.inventoryLinkPage.validateAllLinks(this.apiCtx, this.uniqueLinks);
 
   const reportPath = this.inventoryLinkPage.generateReport(results, passCount, failCount);
   const total = results.length;

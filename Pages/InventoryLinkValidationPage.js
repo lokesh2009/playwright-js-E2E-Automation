@@ -14,6 +14,25 @@ class InventoryLinkValidationPage {
   }
 
   /**
+   * Health check — verify the base site responds with HTTP < 400.
+   * Returns { reachable: bool, status: number|string }.
+   */
+  async healthCheck(siteUrl, apiCtx) {
+    const url = siteUrl.replace(/\/$/, '') + '/';
+    console.log(`\n🏥 Health check: ${url}`);
+    try {
+      const response = await apiCtx.get(url, { timeout: 15000 });
+      const status = response.status();
+      const reachable = status < 400;
+      console.log(reachable ? `  ✅ Site reachable [${status}]` : `  ❌ Site unreachable [${status}]`);
+      return { reachable, status };
+    } catch (err) {
+      console.error(`  ❌ Health check failed: ${err.message}`);
+      return { reachable: false, status: err.message };
+    }
+  }
+
+  /**
    * Navigate to the New Inventory path on the given site.
    */
   async goto(siteUrl) {

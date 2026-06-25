@@ -1,8 +1,13 @@
+@Healthcheck
 Feature: New Inventory Link Validation - QA Environments
   As a QA Engineer
   I want to verify all links on the New Inventory page of the QA servers
   So that I can identify broken links before production deployment
 
+  Background:
+    Given the QA site is reachable at "<siteUrl>"
+
+  @Healthcheck
   Scenario Outline: Check for broken links on <siteUrl>
     Given I navigate to the inventory page for "<siteUrl>"
     When I extract all unique links from the page
