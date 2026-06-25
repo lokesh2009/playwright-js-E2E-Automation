@@ -73,7 +73,9 @@ When('I extract all unique links from the page', async function () {
   this.uniqueLinks = await this.inventoryLinkPage.extractUniqueLinks();
 });
 
-Then('I validate each link and report failures with screenshots', async function () {
+// 10-minute timeout: large pages can have hundreds of links; batched concurrency
+// keeps total time well under this but the guard is needed for very large sites.
+Then('I validate each link and report failures with screenshots', { timeout: 10 * 60 * 1000 }, async function () {
   // Store results on `this` so the After hook can pick them up for report generation
   this.linkResults = await this.inventoryLinkPage.validateAllLinks(this.apiCtx, this.uniqueLinks);
 

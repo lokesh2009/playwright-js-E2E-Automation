@@ -63,7 +63,8 @@ class InventoryLinkValidationPage {
   }
 
   /**
-   * Validate a single link via HTTP GET.
+   * Validate a single link via HTTP GET (8 s timeout to keep batches fast).
+   * Screenshots are taken on the source inventory page for failed links.
    * @param {import('@playwright/test').APIRequestContext} apiCtx
    * @param {string} link
    * @returns {{ link, status, pass, screenshotFile }}
@@ -74,7 +75,7 @@ class InventoryLinkValidationPage {
     let screenshotFile = null;
 
     try {
-      const response = await apiCtx.get(link, { timeout: 15000 });
+      const response = await apiCtx.get(link, { timeout: 8000 });
       status = response.status();
       pass = status < 400;
     } catch (err) {
@@ -100,21 +101,34 @@ class InventoryLinkValidationPage {
   }
 
   /**
-   * Validate all links and return aggregated results.
+   * Validate all links concurrently in batches to avoid Cucumber step timeouts.
+   * CONCURRENCY controls how many HTTP requests run in parallel per batch.
    * Report generation is handled automatically by the After hook via reportHelper.
    * @param {import('@playwright/test').APIRequestContext} apiCtx
    * @param {string[]} links
+   * @param {number} [concurrency=10]
    * @returns {{ results, passCount, failCount }}
    */
-  async validateAllLinks(apiCtx, links) {
+  async validateAllLinks(apiCtx, links, concurrency = 10) {
     const results = [];
     let passCount = 0;
     let failCount = 0;
 
-    for (const link of links) {
-      const result = await this.validateLink(apiCtx, link);
-      results.push(result);
-      result.pass ? passCount++ : failCount++;
+    // Process in fixed-size batches — all links in one batch run in parallel
+    for (let i = 0; i < links.length; i += concurrency) {
+      const batch = links.slice(i, i + concurrency);
+      console.log(
+        `\n⚡ Validating links ${i + 1}–${Math.min(i + concurrency, links.length)} of ${links.length}`
+      );
+
+      const batchResults = await Promise.all(
+        batch.map(link => this.validateLink(apiCtx, link))
+      );
+
+      for (const result of batchResults) {
+        results.push(result);
+        result.pass ? passCount++ : failCount++;
+      }
     }
 
     console.log(
