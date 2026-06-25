@@ -1,6 +1,7 @@
 const { Given, When, Then, Before, After } = require('@cucumber/cucumber');
 const { chromium, request } = require('@playwright/test');
 const InventoryLinkValidationPage = require('../../../Pages/InventoryLinkValidationPage');
+const { generateLinkValidationReport } = require('../../../Utility/reportHelper');
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -8,7 +9,27 @@ Before({ tags: '@Healthcheck' }, async function () {
   this.apiCtx = await request.newContext({ ignoreHTTPSErrors: true });
 });
 
+/**
+ * After hook — runs automatically at the end of every @Healthcheck scenario.
+ * Generates the HTML report from Utility/reportHelper without any manual step call.
+ */
 After({ tags: '@Healthcheck' }, async function () {
+  // Generate report if validation results are available
+  if (this.inventoryLinkPage && this.linkResults) {
+    const { results, passCount, failCount } = this.linkResults;
+    const reportPath = generateLinkValidationReport(
+      this.inventoryLinkPage.inventoryUrl,
+      results,
+      passCount,
+      failCount
+    );
+    this.attach(
+      `Report generated: ${reportPath}`,
+      'text/plain'
+    );
+  }
+
+  // Cleanup
   if (this.apiCtx) await this.apiCtx.dispose();
   if (this.page)    await this.page.close().catch(() => {});
   if (this.context) await this.context.close().catch(() => {});
@@ -18,8 +39,6 @@ After({ tags: '@Healthcheck' }, async function () {
 // ── Background ───────────────────────────────────────────────────────────────
 
 Given('the QA site is reachable at {string}', async function (siteUrl) {
-  // InventoryLinkValidationPage needs a page instance for goto(), but the
-  // health check only uses the API context, so we pass null for page/context.
   const checker = new InventoryLinkValidationPage(null, null);
   const { reachable, status } = await checker.healthCheck(siteUrl, this.apiCtx);
 
@@ -55,15 +74,15 @@ When('I extract all unique links from the page', async function () {
 });
 
 Then('I validate each link and report failures with screenshots', async function () {
-  const { results, passCount, failCount } =
-    await this.inventoryLinkPage.validateAllLinks(this.apiCtx, this.uniqueLinks);
+  // Store results on `this` so the After hook can pick them up for report generation
+  this.linkResults = await this.inventoryLinkPage.validateAllLinks(this.apiCtx, this.uniqueLinks);
 
-  const reportPath = this.inventoryLinkPage.generateReport(results, passCount, failCount);
-  const total = results.length;
+  const { passCount, failCount } = this.linkResults;
+  const total = this.uniqueLinks.length;
 
   this.attach(
     `Link Validation Summary\nSite: ${this.inventoryLinkPage.inventoryUrl}\n` +
-      `Total: ${total} | Pass: ${passCount} | Fail: ${failCount}\nReport: ${reportPath}`,
+      `Total: ${total} | Pass: ${passCount} | Fail: ${failCount}`,
     'text/plain'
   );
 });
