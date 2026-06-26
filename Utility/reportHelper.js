@@ -96,4 +96,103 @@ function generateLinkValidationReport(inventoryUrl, results, passCount, failCoun
   return REPORT_PATH;
 }
 
-module.exports = { generateLinkValidationReport, REPORT_PATH };
+// ── Lighthouse report ─────────────────────────────────────────────────────────
+
+const LH_REPORT_DIR = path.join(__dirname, '../tests/test-results/lighthouse');
+
+/**
+ * Generate an HTML summary report for a Lighthouse audit.
+ * The full Lighthouse HTML report is saved alongside as <safe-name>-full.html.
+ * Called automatically from the @lighthouse After hook — no manual call needed.
+ *
+ * @param {string} url            - Audited URL
+ * @param {object} lhJson         - Parsed Lighthouse JSON result
+ * @param {string} [lhHtml]       - Raw Lighthouse HTML report string (optional)
+ * @returns {string} Path to the written summary report
+ */
+function generateLighthouseReport(url, lhJson, lhHtml) {
+  fs.mkdirSync(LH_REPORT_DIR, { recursive: true });
+
+  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const safeName = url.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 60);
+
+  // Save the full Lighthouse HTML report if provided
+  let fullReportPath = null;
+  if (lhHtml) {
+    fullReportPath = path.join(LH_REPORT_DIR, `${safeName}-full.html`);
+    fs.writeFileSync(fullReportPath, lhHtml, 'utf8');
+  }
+
+  // Extract category scores (0–1 → 0–100)
+  const categories = lhJson.categories || {};
+  const scoreRow = cat => {
+    const c = categories[cat];
+    if (!c) return '';
+    const pct = Math.round((c.score || 0) * 100);
+    const cls = pct >= 90 ? 'good' : pct >= 50 ? 'average' : 'poor';
+    return `<tr><td>${c.title}</td><td class="score ${cls}">${pct}</td></tr>`;
+  };
+
+  const summaryTable = `
+    <table class="scores">
+      <thead><tr><th>Category</th><th>Score</th></tr></thead>
+      <tbody>
+        ${scoreRow('performance')}
+        ${scoreRow('accessibility')}
+        ${scoreRow('best-practices')}
+        ${scoreRow('seo')}
+      </tbody>
+    </table>`;
+
+  const fullReportLink = fullReportPath
+    ? `<p><a href="${fullReportPath}" target="_blank">📄 Open full Lighthouse report</a></p>`
+    : '';
+
+  const sectionHtml = `
+<section>
+  <h2>Audit: <a href="${url}" target="_blank">${url}</a></h2>
+  <p class="meta">Run at: ${timestamp}</p>
+  ${summaryTable}
+  ${fullReportLink}
+</section>`;
+
+  const summaryPath = path.join(LH_REPORT_DIR, 'lighthouse-summary.html');
+  let html;
+  if (fs.existsSync(summaryPath)) {
+    html = fs.readFileSync(summaryPath, 'utf8').replace('</body>', `${sectionHtml}</body>`);
+  } else {
+    html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Lighthouse Audit Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    h2 { color: #444; margin-top: 40px; }
+    section { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 30px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .meta { color: #888; font-size: 0.9em; }
+    table.scores { border-collapse: collapse; width: 320px; margin: 12px 0; }
+    table.scores th { background: #34495e; color: #fff; padding: 8px 16px; text-align: left; }
+    table.scores td { padding: 8px 16px; border-bottom: 1px solid #ddd; font-size: 0.95em; }
+    .score { font-weight: bold; text-align: center; }
+    .good   { color: #27ae60; }
+    .average { color: #f39c12; }
+    .poor   { color: #e74c3c; }
+    a { color: #2980b9; }
+  </style>
+</head>
+<body>
+  <h1>🔦 Lighthouse Audit Report</h1>
+  ${sectionHtml}
+</body>
+</html>`;
+  }
+
+  fs.writeFileSync(summaryPath, html, 'utf8');
+  console.log(`📄 Lighthouse summary saved to: ${summaryPath}`);
+  return summaryPath;
+}
+
+module.exports = { generateLinkValidationReport, generateLighthouseReport, REPORT_PATH, LH_REPORT_DIR };
