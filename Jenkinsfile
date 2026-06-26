@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+/* groovylint-disable CompileStatic */
 pipeline {
     agent {
         node {
@@ -7,13 +8,11 @@ pipeline {
     }
 
     // ── Parameters ─────────────────────────────────────────────────────────────
-    // All overridable at build time so QA/UAT and suite/module combinations
-    // can be driven from a Jenkins "Build with Parameters" form.
     parameters {
         choice(
             name: 'SUITE',
             choices: ['smoke', 'regression'],
-            description: 'Test suite to run: smoke (fast, critical path) or regression (full)'
+            description: 'Test suite: smoke (critical path) or regression (full)'
         )
         choice(
             name: 'MODULE',
@@ -34,39 +33,36 @@ pipeline {
                 'api',
                 'performance'
             ],
-            description: 'Module to target. Selects the matching Cucumber tag. Use "all" to run every tag in the chosen suite.'
+            description: 'Module to target via Cucumber tag. "all" runs every scenario in the chosen suite.'
         )
     }
 
     // ── Environment ────────────────────────────────────────────────────────────
     environment {
-        qaTargetEnv      = 'QA'
-        uatTargetEnv     = 'UAT'
-
+        QA_ENV           = 'QA'
+        UAT_ENV          = 'UAT'
         NODE_VERSION     = 'nodejs18x'
         REPORT_DIR       = 'allure-results'
         HTML_REPORT_DIR  = 'reports'
         TEST_RESULTS_DIR = 'tests/test-results'
-
-        assemblyVersion  = "1.0.${env.BUILD_NUMBER}"
+        ASSEMBLY_VERSION = "1.0.${env.BUILD_NUMBER}"
     }
 
     options {
         skipDefaultCheckout(true)
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Abort if the whole pipeline exceeds 2 hours
         timeout(time: 2, unit: 'HOURS')
     }
 
     // ── Stages ─────────────────────────────────────────────────────────────────
     stages {
 
-        // ── 1. Checkout ────────────────────────────────────────────────────────
+        // 1. Checkout ──────────────────────────────────────────────────────────
         stage('Clean Workspace and Checkout Code') {
             steps {
                 cleanWs()
                 script {
-                    def checkoutVars = checkout scm
+                    Map checkoutVars = checkout scm
                     env.GIT_URL    = checkoutVars.GIT_URL
                     env.GIT_BRANCH = checkoutVars.GIT_BRANCH
                     env.GIT_COMMIT = checkoutVars.GIT_COMMIT
@@ -74,60 +70,44 @@ pipeline {
             }
         }
 
-        // ── 2. Environment guard ───────────────────────────────────────────────
-        // Only QA and UAT branches trigger test execution.
+        // 2. Set environment variables (QA / UAT only) ─────────────────────────
         stage('Set Environment Variables') {
-            when {
-                anyOf { branch 'QA'; branch 'UAT' }
-            }
+            when { anyOf { branch 'QA'; branch 'UAT' } }
             steps {
                 script {
-                    switch (env.GIT_BRANCH) {
-                        case 'QA':
-                            env.TARGET_ENV  = env.qaTargetEnv
-                            env.ENV_CONFIG  = 'tests/config/.env.qa'
-                            break
-                        case 'UAT':
-                            env.TARGET_ENV  = env.uatTargetEnv
-                            env.ENV_CONFIG  = 'tests/config/.env.uat'
-                            break
+                    if (env.GIT_BRANCH == 'QA') {
+                        env.TARGET_ENV = env.QA_ENV
+                        env.ENV_CONFIG = 'tests/config/.env.qa'
+                    } else {
+                        env.TARGET_ENV = env.UAT_ENV
+                        env.ENV_CONFIG = 'tests/config/.env.uat'
                     }
-                    echo "▶ Target environment : ${env.TARGET_ENV}"
-                    echo "▶ Suite              : ${params.SUITE}"
-                    echo "▶ Module             : ${params.MODULE}"
+                    echo "Target environment : ${env.TARGET_ENV}"
+                    echo "Suite              : ${params.SUITE}"
+                    echo "Module             : ${params.MODULE}"
                 }
             }
         }
 
-        // ── 3. Install dependencies ────────────────────────────────────────────
+        // 3. Install Node dependencies + Playwright browser ────────────────────
         stage('Install Dependencies') {
-            when {
-                anyOf { branch 'QA'; branch 'UAT' }
-            }
+            when { anyOf { branch 'QA'; branch 'UAT' } }
             steps {
                 nodejs(NODE_VERSION) {
                     sh 'npm ci'
-                    // Install Playwright browsers (Chromium only; skip heavy downloads)
                     sh 'npx playwright install chromium --with-deps'
                 }
             }
         }
 
-        // ── 4. Resolve Cucumber tags ───────────────────────────────────────────
-        // Builds the --tags expression from SUITE + MODULE parameters.
-        // Smoke always requires @smoke; regression excludes @wip.
-        // Module adds an AND condition on top of the suite filter.
+        // 4. Resolve Cucumber --tags expression ────────────────────────────────
         stage('Resolve Test Tags') {
-            when {
-                anyOf { branch 'QA'; branch 'UAT' }
-            }
+            when { anyOf { branch 'QA'; branch 'UAT' } }
             steps {
                 script {
-                    // Suite tag
-                    def suiteTag = params.SUITE == 'smoke' ? '@smoke' : '@regression'
+                    String suiteTag = (params.SUITE == 'smoke') ? '@smoke' : '@regression'
 
-                    // Module → Cucumber tag mapping
-                    def moduleTagMap = [
+                    Map moduleTagMap = [
                         'all'                 : '',
                         'inventory'           : '@inventory',
                         'lighthouse'          : '@lighthouse',
@@ -145,21 +125,18 @@ pipeline {
                         'performance'         : '@lighthouse'
                     ]
 
-                    def moduleTag = moduleTagMap[params.MODULE] ?: ''
+                    String moduleTag = moduleTagMap[params.MODULE] ?: ''
 
-                    // Combine: suite AND module (when module is not "all")
-                    if (moduleTag) {
-                        env.CUCUMBER_TAGS = "${suiteTag} and ${moduleTag}"
-                    } else {
-                        env.CUCUMBER_TAGS = suiteTag
-                    }
+                    env.CUCUMBER_TAGS = moduleTag
+                        ? "${suiteTag} and ${moduleTag}"
+                        : suiteTag
 
-                    echo "▶ Cucumber tags expression: ${env.CUCUMBER_TAGS}"
+                    echo "Cucumber tags expression: ${env.CUCUMBER_TAGS}"
                 }
             }
         }
 
-        // ── 5. Run Smoke Suite ─────────────────────────────────────────────────
+        // 5. Smoke Suite ───────────────────────────────────────────────────────
         stage('Run Smoke Tests') {
             when {
                 allOf {
@@ -185,13 +162,19 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: "${HTML_REPORT_DIR}/smoke-report.html", allowEmptyArchive: true
-                    archiveArtifacts artifacts: "${TEST_RESULTS_DIR}/**/*",              allowEmptyArchive: true
+                    archiveArtifacts(
+                        artifacts: "${HTML_REPORT_DIR}/smoke-report.html",
+                        allowEmptyArchive: true
+                    )
+                    archiveArtifacts(
+                        artifacts: "${TEST_RESULTS_DIR}/**/*",
+                        allowEmptyArchive: true
+                    )
                 }
             }
         }
 
-        // ── 6. Run Regression Suite ────────────────────────────────────────────
+        // 6. Regression Suite ──────────────────────────────────────────────────
         stage('Run Regression Tests') {
             when {
                 allOf {
@@ -217,24 +200,36 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: "${HTML_REPORT_DIR}/regression-report.html", allowEmptyArchive: true
-                    archiveArtifacts artifacts: "${TEST_RESULTS_DIR}/**/*",                  allowEmptyArchive: true
-                    archiveArtifacts artifacts: "${TEST_RESULTS_DIR}/lighthouse/**/*",        allowEmptyArchive: true
-                    archiveArtifacts artifacts: "${TEST_RESULTS_DIR}/inventory-link-validation-report.html", allowEmptyArchive: true
+                    archiveArtifacts(
+                        artifacts: "${HTML_REPORT_DIR}/regression-report.html",
+                        allowEmptyArchive: true
+                    )
+                    archiveArtifacts(
+                        artifacts: "${TEST_RESULTS_DIR}/**/*",
+                        allowEmptyArchive: true
+                    )
+                    archiveArtifacts(
+                        artifacts: "${TEST_RESULTS_DIR}/lighthouse/**/*",
+                        allowEmptyArchive: true
+                    )
+                    archiveArtifacts(
+                        artifacts: "${TEST_RESULTS_DIR}/inventory-link-validation-report.html",
+                        allowEmptyArchive: true
+                    )
                 }
             }
         }
 
-        // ── 7. Generate Allure Report ──────────────────────────────────────────
+        // 7. Generate Allure Report ────────────────────────────────────────────
         stage('Generate Allure Report') {
-            when {
-                anyOf { branch 'QA'; branch 'UAT' }
-            }
+            when { anyOf { branch 'QA'; branch 'UAT' } }
             steps {
                 script {
-                    // Use allure-commandline if Java is available; fall back gracefully
-                    def javaAvailable = sh(script: 'java -version 2>/dev/null && echo yes || echo no', returnStdout: true).trim()
-                    if (javaAvailable == 'yes') {
+                    String javaCheck = sh(
+                        script: 'java -version > /dev/null 2>&1 && echo yes || echo no',
+                        returnStdout: true
+                    ).trim()
+                    if (javaCheck == 'yes') {
                         sh "npx allure generate ${REPORT_DIR} --clean -o allure-report"
                         publishHTML(target: [
                             allowMissing         : true,
@@ -242,10 +237,10 @@ pipeline {
                             keepAll              : true,
                             reportDir            : 'allure-report',
                             reportFiles          : 'index.html',
-                            reportName           : "Allure Report – ${params.SUITE} / ${params.MODULE} [${env.TARGET_ENV}]"
+                            reportName           : "Allure – ${params.SUITE}/${params.MODULE} [${env.TARGET_ENV}]"
                         ])
                     } else {
-                        echo 'Java not found — skipping Allure generation. HTML reports are archived instead.'
+                        echo 'Java not available on agent — skipping Allure; HTML reports are archived.'
                     }
                 }
             }
@@ -256,18 +251,16 @@ pipeline {
     // ── Post ───────────────────────────────────────────────────────────────────
     post {
         always {
-            // Archive all JSON result files for downstream processing
-            archiveArtifacts artifacts: "${REPORT_DIR}/*.json", allowEmptyArchive: true
+            archiveArtifacts(artifacts: "${REPORT_DIR}/*.json", allowEmptyArchive: true)
         }
         success {
-            echo "✅ ${params.SUITE.toUpperCase()} suite / module [${params.MODULE}] PASSED on ${env.TARGET_ENV}"
+            echo "PASSED: ${params.SUITE} / ${params.MODULE} on ${env.TARGET_ENV}"
         }
         failure {
-            echo "❌ ${params.SUITE.toUpperCase()} suite / module [${params.MODULE}] FAILED on ${env.TARGET_ENV}"
-            // Add emailext / Slack notification here if needed
+            echo "FAILED: ${params.SUITE} / ${params.MODULE} on ${env.TARGET_ENV}"
         }
         unstable {
-            echo "⚠️  ${params.SUITE.toUpperCase()} suite / module [${params.MODULE}] is UNSTABLE on ${env.TARGET_ENV}"
+            echo "UNSTABLE: ${params.SUITE} / ${params.MODULE} on ${env.TARGET_ENV}"
         }
     }
 }
