@@ -154,8 +154,9 @@ pipeline {
                             --require Setup/hooks.js \\
                             --tags "${env.CUCUMBER_TAGS}" \\
                             --format progress \\
-                            --format json:${REPORT_DIR}/smoke-report.json \\
                             --format html:${HTML_REPORT_DIR}/smoke-report.html \\
+                            --format allure-cucumberjs/reporter \\
+                            --format-options '{"resultsDir":"${REPORT_DIR}"}' \\
                             --exit
                     """
                 }
@@ -192,8 +193,9 @@ pipeline {
                             --require Setup/hooks.js \\
                             --tags "${env.CUCUMBER_TAGS}" \\
                             --format progress \\
-                            --format json:${REPORT_DIR}/regression-report.json \\
                             --format html:${HTML_REPORT_DIR}/regression-report.html \\
+                            --format allure-cucumberjs/reporter \\
+                            --format-options '{"resultsDir":"${REPORT_DIR}"}' \\
                             --exit
                     """
                 }
@@ -221,6 +223,8 @@ pipeline {
         }
 
         // 7. Generate Allure Report ────────────────────────────────────────────
+        // allure-cucumberjs writes one JSON file per scenario into allure-results/.
+        // `allure generate` converts those into a full interactive HTML report.
         stage('Generate Allure Report') {
             when { anyOf { branch 'QA'; branch 'UAT' } }
             steps {
@@ -230,7 +234,11 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     if (javaCheck == 'yes') {
-                        sh "npx allure generate ${REPORT_DIR} --clean -o allure-report"
+                        // --clean removes the previous allure-report before regenerating
+                        sh """
+                            npx allure generate ${REPORT_DIR} --clean -o allure-report
+                            echo "Allure report generated at allure-report/index.html"
+                        """
                         publishHTML(target: [
                             allowMissing         : true,
                             alwaysLinkToLastBuild: true,
@@ -239,8 +247,9 @@ pipeline {
                             reportFiles          : 'index.html',
                             reportName           : "Allure – ${params.SUITE}/${params.MODULE} [${env.TARGET_ENV}]"
                         ])
+                        archiveArtifacts(artifacts: 'allure-report/**', allowEmptyArchive: true)
                     } else {
-                        echo 'Java not available on agent — skipping Allure; HTML reports are archived.'
+                        echo 'Java not available on agent — skipping Allure; HTML reports are archived instead.'
                     }
                 }
             }

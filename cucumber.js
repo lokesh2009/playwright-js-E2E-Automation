@@ -1,24 +1,67 @@
 module.exports = {
   default: {
     require: [
-      'tests/steps/**/*.js',     // All step definition files
-      'Setup/hooks.js'           // Hooks, custom world, etc.
+      'tests/steps/**/*.js',
+      'Setup/hooks.js'
     ],
     format: [
-      'progress',                                // Console output
-      'html:reports/cucumber-report.html',       // HTML report
-      'json:reports/cucumber-report.json',       // JSON report (optional)
-      'json:allure-results/cucumber-report.json' // Allure JSON results
+      'progress',
+      'html:reports/cucumber-report.html',
+      'json:reports/cucumber-report.json',
+      // Allure formatter — writes per-test result JSON files to allure-results/
+      // so `allure generate allure-results` produces a full interactive report
+      'allure-cucumberjs/reporter'
     ],
-    paths: ['tests/features/**/*.feature'],      // All .feature files
-    parallel: 0,                                 // Sequential execution
-    timeout: 120000,                             // Set timeout to 120 seconds
-    tags: '',                                    // Optional: filter by @tags
+    formatOptions: {
+      resultsDir: 'allure-results'
+    },
+    paths: ['tests/features/**/*.feature'],
+    parallel: 0,
+    timeout: 120000,
+    tags: '',
     worldParameters: {
-      baseURL: '' // Example global parameter
+      baseURL: ''
     }
-  }
-  ,
+  },
+
+  smoke: {
+    require: [
+      'tests/steps/**/*.js',
+      'Setup/hooks.js'
+    ],
+    format: [
+      'progress',
+      'html:reports/smoke-report.html',
+      'allure-cucumberjs/reporter'
+    ],
+    formatOptions: {
+      resultsDir: 'allure-results'
+    },
+    paths: ['tests/features/**/*.feature'],
+    tags: '@smoke',
+    parallel: 0,
+    timeout: 120000
+  },
+
+  regression: {
+    require: [
+      'tests/steps/**/*.js',
+      'Setup/hooks.js'
+    ],
+    format: [
+      'progress',
+      'html:reports/regression-report.html',
+      'allure-cucumberjs/reporter'
+    ],
+    formatOptions: {
+      resultsDir: 'allure-results'
+    },
+    paths: ['tests/features/**/*.feature'],
+    tags: '@regression',
+    parallel: 0,
+    timeout: 120000
+  },
+
   debug: {
     require: [
       'Setup/hooks.js',
