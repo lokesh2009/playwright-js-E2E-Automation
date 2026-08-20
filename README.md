@@ -1,263 +1,76 @@
 # 🎭 Playwright JS E2E Automation Suite
 
-A comprehensive end-to-end automation testing framework using **Playwright**, **Cucumber (BDD)**, and **JavaScript/Node.js**.
+This repository contains a JavaScript-based end-to-end automation framework built with Playwright and Cucumber. It supports UI, API, health-check, self-heal, and performance-style test flows for a set of web applications.
 
-[![Node.js](https://img.shields.io/badge/Node.js-v22.19.0-green?logo=node.js)]()
-[![Playwright](https://img.shields.io/badge/Playwright-Latest-blue?logo=playwright)]()
-[![Cucumber](https://img.shields.io/badge/Cucumber-v9.5.0-green)]()
-[![License](https://img.shields.io/badge/License-ISC-yellow)]()
+## ✅ What’s included
 
----
-
-## 📋 Table of Contents
-
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [Running Tests](#running-tests)
-- [Configuration](#configuration)
-- [Test Scenarios](#test-scenarios)
-- [Reports](#reports)
-- [CI/CD Integration](#cicd-integration)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-
----
-
-## 🎯 Project Overview
-
-This automation suite provides a robust testing framework for:
-- **UI Testing**: Automated browser testing across multiple platforms
-- **API Testing**: REST API validation and data comparison
-- **Performance Testing**: Lighthouse performance audits
-- **Broken Link Validation**: Automated link checking
-- **Cross-URL Testing**: Testing on multiple domains (Amazon, Dealerspike, etc.)
-
-**Current Status**: ✅ **STABLE & PASSING**
-- UI Tests: ✅ Passing
-- API Tests: ✅ Configured
-- Performance Tests: ✅ Enabled
-- Reports: ✅ Generated
-
----
-
-## ✨ Features
-
-### 🎬 Core Features
-- ✅ **BDD Framework**: Natural language Gherkin syntax for test scenarios
-- ✅ **Playwright Integration**: Modern browser automation with Chromium, Firefox, WebKit
-- ✅ **Multi-URL Support**: Test multiple websites and domains
-- ✅ **Screenshot Capture**: Automatic screenshots on test failure
-- ✅ **Detailed Reporting**: HTML, JSON, and JUnit XML reports
-- ✅ **Flexible Configuration**: Environment-based settings via Cucumber
-- ✅ **Tag-Based Execution**: Run specific test suites using tags
-- ✅ **Error Handling**: Robust error handling and graceful failures
-- ✅ **Performance Metrics**: Lighthouse integration for performance testing
-
-### 🔧 Technical Capabilities
-- **Browser Support**: Chromium, Firefox, WebKit (WebKit currently disabled)
-- **Test Types**: Unit, Integration, E2E, API, Performance
-- **Reporting**: HTML, JSON, JUnit XML, Allure-ready
-- **CI/CD Ready**: GitHub Actions, Jenkins, Azure DevOps compatible
-- **Parallel Execution**: Sequential by default, can be configured for parallel runs
-
----
+- BDD-style test execution with Cucumber and Gherkin feature files
+- Playwright-based browser automation for UI validation
+- API and health-check scenarios
+- Self-heal and parts-request workflow coverage
+- HTML and JSON reporting output for test runs
 
 ## 📦 Prerequisites
 
-### System Requirements
-- **OS**: Windows 10/11, macOS, Linux
-- **Node.js**: v16 or higher (currently using v22.19.0)
-- **npm**: v7 or higher
-- **Browsers**: Chromium (auto-downloaded by Playwright)
-
-### Software Requirements
-- Git (for version control)
-- PowerShell or Bash terminal
-- Any modern text editor (VS Code recommended)
-
-### Optional Tools
-- Chrome/Firefox browser (for manual testing)
-- Postman (for API testing)
-- Allure CLI (for Allure reports)
-
----
+- Node.js 18+ (the project is currently aligned with Node 22 in the environment)
+- npm
+- Git
+- A terminal such as PowerShell, Command Prompt, or Bash
 
 ## 🚀 Installation
 
-### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/lokesh2009/playwright-js-E2E-Automation.git
-cd playwright-js-E2E-Automation
-```
-
-### Step 2: Checkout the E2E Branch
-```bash
-git checkout E2EBranch
-```
-
-### Step 3: Install Dependencies
-```bash
+git clone https://lokeshsharma4@bitbucket.org/aridevelopment/ds-qa-automation-repo.git
+cd ds-qa-automation-repo
 npm install
-```
-
-This will install:
-- `@cucumber/cucumber@9.5.0` - BDD framework
-- `@playwright/test` - Playwright testing library
-- `playwright` - Browser automation
-- `axios` - HTTP client for API testing
-- `chai` - Assertion library
-- `lighthouse` - Performance testing
-
-### Step 4: Verify Installation
-```bash
-npx playwright --version
-npx cucumber-js --version
-```
-
-Expected Output:
-```
-Version X.XX.X (Playwright)
-X.X.X (@cucumber/cucumber)
-```
-
-### Step 5: Download Browsers (One-time)
-```bash
 npx playwright install
 ```
 
-This downloads Chromium, Firefox, and WebKit browsers (~500MB).
+## 🧪 Running tests
 
----
+Common commands available in this repository:
 
-## 📂 Project Structure
-
-```
-playwright-js-E2E-Automation/
-│
-├── 📁 tests/                           # Test files
-│   ├── features/                       # Gherkin feature files (BDD scenarios)
-│   │   ├── UIFeature/
-│   │   │   ├── addProduct.feature     # Amazon & Dealerspike product tests
-│   │   │   ├── brokenlink.feature     # Broken link validation
-│   │   │   └── searchProduct.feature  # Product search tests
-│   │   ├── APIFeature/
-│   │   │   ├── apiTest.feature        # API testing scenarios
-│   │   │   └── A123Feed.feature       # Feed API tests
-│   │   └── performance/
-│   │       ├── lighthouse.feature     # Performance testing
-│   │       └── load_test.feature      # Load testing
-│   │
-│   ├── steps/                          # Step definitions (Implementation)
-│   │   ├── ui/
-│   │   │   ├── addProductStepdef.js   # Product test steps
-│   │   │   ├── search_steps.js        # Search step definitions
-│   │   │   └── broken-links.steps.js  # Link validation steps
-│   │   ├── api/
-│   │   │   ├── api_steps.js           # API test steps
-│   │   │   └── compareDealerSteps.js  # Data comparison steps
-│   │   └── performance/
-│   │       ├── lighthouseSteps.js     # Performance steps
-│   │       └── jmeter-performce.js    # Load testing steps
-│   │
-│   └── specs/                          # Direct test specs (alternative format)
-│       ├── apiTest.spec.js
-│       ├── lighthouse.spec.js
-│       ├── uiTest.spec.js
-│       └── broken.spec.js
-│
-├── 📁 Pages/                           # Page Object Models (POM)
-│   ├── AmazonHomePage.js              # Amazon page interactions
-│   ├── SearchPage.js                  # Search page model
-│   ├── ProductPage.js                 # Product details page
-│   ├── AddProductPage.js              # Add product functionality
-│   └── perfMetrics.js                 # Performance metrics
-│
-├── 📁 Setup/                           # Configuration and Hooks
-│   └── hooks.js                        # Before/After hooks, browser setup
-│
-├── 📁 Utility/                         # Helper functions
-│   ├── apiHelper.js                   # API request helpers
-│   ├── util.js                        # Utility functions
-│   └── logger.js                      # Logging utilities
-│
-├── 📁 reports/                         # Test reports (Generated)
-│   ├── cucumber-report.html           # Main HTML report
-│   ├── cucumber-report.json           # JSON report data
-│   └── *.png                          # Test screenshots
-│
-├── 📁 test-results/                    # Test result files
-│   ├── junit.xml                      # JUnit XML format
-│   ├── results.json                   # JSON results
-│   └── broken-*/                      # Broken link test results
-│
-├── 📁 playwright-report/               # Playwright report
-│   └── index.html                     # Playwright HTML report
-│
-├── 📁 .github/                         # GitHub Actions workflows
-│   └── workflows/
-│       └── test.yml                   # CI/CD pipeline configuration
-│
-├── 📄 cucumber.js                      # Cucumber configuration
-├── 📄 cucumber.json                    # Cucumber output file
-├── 📄 package.json                     # npm dependencies
-├── 📄 package-lock.json                # Dependency lock file
-├── 📄 playwright.config.js             # Playwright configuration
-├── 📄 .gitignore                       # Git ignore rules
-└── 📄 README.md                        # This file
-
-```
-
----
-
-## 🧪 Running Tests
-
-### Basic Commands
-
-#### Run All Tests
 ```bash
 npm run test:cucumber
-# or
-npx cucumber-js
+npm run test:ui
+npm run test:healthcheck
+npm run test:api
+npm run test:performance
+npm run test:selfheal
+npm run test:parts-request
 ```
 
-**Output**: Runs all feature files, generates HTML and JSON reports
+You can also run a specific feature file directly with Cucumber if needed.
 
----
+## 📁 Project structure
 
-#### Run Specific Feature File
+- tests/features/ - Gherkin feature files grouped by UI, API, and performance scenarios
+- tests/steps/ - Step definitions for the feature files
+- Pages/ - Page Object Model classes for the UI flows
+- Setup/ - Hooks and shared browser/test setup
+- Utility/ - Shared helpers and fixtures
+- reports/ - Generated HTML/JSON reports for test runs
+- allure-results/ - Raw results used for Allure reporting
+- test-results/ - Playwright/Cucumber result files
+
+## 📈 Reports
+
+Generated reports are written to the reports folder and other result folders during execution. These files are intended to stay local and are ignored by Git.
+
+## 🤖 How to start the MCP server
+
+The Playwright MCP server can be started locally with:
+
 ```bash
-npx cucumber-js tests/features/UIFeature/addProduct.feature
+npx @playwright/mcp@latest
 ```
 
----
+If you are using VS Code, make sure the MCP configuration file is present in your user settings and then reload the window after saving it. Once connected, you can use Copilot agent mode to drive the Playwright MCP server from this repository.
 
-#### Run Tests by Tag
+## 🔧 Notes
 
-##### 🏷️ Available Tags
-- `@smoke` - Quick smoke tests
-- `@ui` - UI testing scenarios
-- `@api` - API testing scenarios
-- `@dealerspike` - Dealerspike-specific tests
-- `@performance` - Performance tests
-- `@regression` - Full regression suite
-
-##### Run Smoke Tests Only
-```bash
-npx cucumber-js --tags "@smoke"
-```
-
-##### Run UI Tests Only
-```bash
-npx cucumber-js --tags "@ui"
-```
-
-##### Run Dealerspike Tests Only
-```bash
-npx cucumber-js --tags "@dealerspike"
-```
+- The main test runner is configured through package.json and Playwright/Cucumber setup files.
+- Environment-specific values should be kept in local config files and not committed to source control.
 
 ##### Run Multiple Tags (AND condition)
 ```bash
